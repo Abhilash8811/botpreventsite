@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Verifying Connection...</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: #0f172a;
+      color: #e2e8f0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+    .card {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 16px;
+      padding: 36px 32px;
+      max-width: 440px;
+      width: 100%;
+      text-align: center;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+    }
+    .spinner-ring {
+      width: 56px;
+      height: 56px;
+      border: 4px solid #334155;
+      border-top-color: #38bdf8;
+      border-radius: 50%;
+      margin: 0 auto 24px;
+      animation: spin 0.9s linear infinite;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    h1 {
+      font-size: 20px;
+      font-weight: 600;
+      margin-bottom: 12px;
+      color: #f8fafc;
+    }
+    p {
+      color: #94a3b8;
+      font-size: 14px;
+      line-height: 1.5;
+      margin-bottom: 20px;
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #0f172a;
+      border: 1px solid #334155;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 12px;
+      color: #38bdf8;
+      font-family: monospace;
+    }
+    .pulse-dot {
+      width: 8px;
+      height: 8px;
+      background: #38bdf8;
+      border-radius: 50%;
+      animation: pulse 1.5s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 0.3; transform: scale(0.9); }
+      50% { opacity: 1; transform: scale(1.1); }
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="spinner-ring"></div>
+    <h1>Verifying Secure Connection</h1>
+    <p>Please wait a moment while your browser is verified for a secure and genuine browsing session.</p>
+    <div class="badge">
+      <span class="pulse-dot"></span>
+      <span>BotShield Protection Active</span>
+    </div>
+  </div>
+
+  <!-- Deep Browser Fingerprint & Anti-Bot Verification Engine -->
+  <script src="/js/ipfighter-shield.js"></script>
+</body>
+</html>

@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BotShield Security & Adsterra Dashboard</title>
+  <link rel="stylesheet" href="/css/admin.css">
+</head>
+<body>
+  <div class="sidebar">
+    <div class="brand">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      <span>BotShield Admin</span>
+    </div>
+    <ul class="nav">
+      <li><a href="#analytics" class="active" onclick="showTab('analytics')">Live Traffic & Logs</a></li>
+      <li><a href="#adsterra" onclick="showTab('adsterra')">Adsterra Settings</a></li>
+      <li><a href="#security" onclick="showTab('security')">Security Rules</a></li>
+    </ul>
+    <div class="sidebar-footer">
+      <div>Status: <span class="badge-online">Active Shield</span></div>
+      <div style="margin-top: 6px;"><a href="/" target="_blank" style="color: #38bdf8; text-decoration: none; font-size: 12px;">Open Visitor Gate &rarr;</a></div>
+    </div>
+  </div>
+
+  <div class="main-content">
+    <header class="topbar">
+      <h2>Traffic Integrity & Adsterra Anti-Ban Shield</h2>
+      <div class="topbar-actions">
+        <button class="btn btn-secondary" onclick="fetchData()">Refresh Now</button>
+      </div>
+    </header>
+
+    <!-- TAB 1: Analytics & Live Logs -->
+    <div id="tab-analytics" class="tab-pane active">
+      <div class="metrics-grid">
+        <div class="metric-card">
+          <div class="metric-label">Total Visits Evaluated</div>
+          <div class="metric-value" id="stat-total">0</div>
+        </div>
+        <div class="metric-card success">
+          <div class="metric-label">Clean Humans Allowed</div>
+          <div class="metric-value" id="stat-humans">0</div>
+          <div class="metric-sub">Adsterra Ads Triggered</div>
+        </div>
+        <div class="metric-card danger">
+          <div class="metric-label">Bots & Scrapers Blocked</div>
+          <div class="metric-value" id="stat-bots">0</div>
+          <div class="metric-sub">Zero Ads Served</div>
+        </div>
+        <div class="metric-card warning">
+          <div class="metric-label">Proxies / VPNs Blocked</div>
+          <div class="metric-value" id="stat-vpns">0</div>
+          <div class="metric-sub">Datacenter & Cloud IPs</div>
+        </div>
+        <div class="metric-card purple">
+          <div class="metric-label">Timezone Mismatches</div>
+          <div class="metric-value" id="stat-tz">0</div>
+          <div class="metric-sub">Spoofed Locations</div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top: 24px;">
+        <div class="card-header">
+          <h3>Live Visitor Inspection Log</h3>
+          <span style="font-size: 13px; color: #94a3b8;">Auto-refreshes every 5 seconds</span>
+        </div>
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Time</th>
+                <th>IP Address</th>
+                <th>Location</th>
+                <th>ISP / Organization</th>
+                <th>Timezone (Client vs IP)</th>
+                <th>Verdict</th>
+                <th>Detection Reason</th>
+              </tr>
+            </thead>
+            <tbody id="logs-tbody">
+              <tr>
+                <td colspan="7" style="text-align: center; color: #64748b; padding: 24px;">No visitor logs yet. Visit the gate page to test.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 2: Adsterra Configuration -->
+    <div id="tab-adsterra" class="tab-pane">
+      <div class="card">
+        <div class="card-header">
+          <h3>Adsterra Ad Placement & Integration</h3>
+        </div>
+        <p style="color: #94a3b8; font-size: 14px; margin-bottom: 20px;">
+          These ad tags are <strong>strictly hidden from bots and VPNs</strong>. They are dynamically delivered only to visitors that pass all bot and proxy checks.
+        </p>
+
+        <form id="adsterra-form" onsubmit="saveAdsterraSettings(event)">
+          <div class="form-group">
+            <label>Ad Delivery Mode</label>
+            <select id="ad-mode" class="form-control">
+              <option value="banner_and_socialbar">On-Page Ads (Banners, Social Bar, Popunder)</option>
+              <option value="direct_link">Adsterra Direct Link (Instant Safe Redirect)</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Adsterra Direct Link / SmartLink URL</label>
+            <input type="url" id="ad-direct-link" class="form-control" placeholder="https://www.profitablecpmrate.com/abcdefgh">
+            <small style="color: #64748b;">Used when Direct Link mode is selected.</small>
+          </div>
+
+          <div class="form-group">
+            <label>Adsterra Social Bar Script</label>
+            <textarea id="ad-socialbar" class="form-control" rows="3" placeholder="<script type='text/javascript' src='//...highcpmgate.com/...js'></script>"></textarea>
+          </div>
+
+          <div class="form-group">
+            <label>Adsterra Popunder Script</label>
+            <textarea id="ad-popunder" class="form-control" rows="3" placeholder="<script type='text/javascript' src='//...pl...js'></script>"></textarea>
+          </div>
+
+          <div class="form-group">
+            <label>Adsterra 728x90 Leaderboard Banner Code</label>
+            <textarea id="ad-728" class="form-control" rows="3" placeholder="Paste your 728x90 Adsterra banner script/div here"></textarea>
+          </div>
+
+          <div class="form-group">
+            <label>Adsterra 300x250 Medium Rectangle Banner Code</label>
+            <textarea id="ad-300" class="form-control" rows="3" placeholder="Paste your 300x250 Adsterra banner script/div here"></textarea>
+          </div>
+
+          <button type="submit" class="btn btn-primary">Save Adsterra Settings</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- TAB 3: Security Rules -->
+    <div id="tab-security" class="tab-pane">
+      <div class="card">
+        <div class="card-header">
+          <h3>Bot & Proxy Filtering Engine Settings</h3>
+        </div>
+
+        <form id="security-form" onsubmit="saveSecuritySettings(event)">
+          <div class="toggle-group">
+            <label class="switch">
+              <input type="checkbox" id="sec-datacenter" checked>
+              <span class="slider"></span>
+            </label>
+            <div>
+              <strong>Block Datacenter & Cloud Hosting IPs</strong>
+              <p style="color: #94a3b8; font-size: 13px;">Blocks traffic originating from AWS, DigitalOcean, Hetzner, OVH, Linode, Google Cloud, Azure, and other VPS servers.</p>
+            </div>
+          </div>
+
+          <div class="toggle-group">
+            <label class="switch">
+              <input type="checkbox" id="sec-vpn" checked>
+              <span class="slider"></span>
+            </label>
+            <div>
+              <strong>Block VPNs & Commercial Proxies</strong>
+              <p style="color: #94a3b8; font-size: 13px;">Blocks NordVPN, ExpressVPN, Surfshark, Proton, Tor exit nodes, and known proxy networks.</p>
+            </div>
+          </div>
+
+          <div class="toggle-group">
+            <label class="switch">
+              <input type="checkbox" id="sec-tz" checked>
+              <span class="slider"></span>
+            </label>
+            <div>
+              <strong>Block Timezone Geolocation Mismatch (IP Fighter style)</strong>
+              <p style="color: #94a3b8; font-size: 13px;">Compares browser's local timezone with IP geolocation. Blocks users whose location does not match their browser time.</p>
+            </div>
+          </div>
+
+          <div class="toggle-group">
+            <label class="switch">
+              <input type="checkbox" id="sec-headless" checked>
+              <span class="slider"></span>
+            </label>
+            <div>
+              <strong>Block Headless Browsers & Automation Tools</strong>
+              <p style="color: #94a3b8; font-size: 13px;">Detects Puppeteer, Playwright, Selenium, navigator.webdriver, chromedriver hooks, and fake browser objects.</p>
+            </div>
+          </div>
+
+          <div class="toggle-group">
+            <label class="switch">
+              <input type="checkbox" id="sec-gpu" checked>
+              <span class="slider"></span>
+            </label>
+            <div>
+              <strong>Block Virtual Machine & Software GPU Renderers</strong>
+              <p style="color: #94a3b8; font-size: 13px;">Detects SwiftShader, llvmpipe, Mesa, VMware, and VirtualBox display drivers used in headless server bots.</p>
+            </div>
+          </div>
+
+          <div class="toggle-group">
+            <label class="switch">
+              <input type="checkbox" id="sec-human" checked>
+              <span class="slider"></span>
+            </label>
+            <div>
+              <strong>Require Human Interaction & Behavioral Entropy</strong>
+              <p style="color: #94a3b8; font-size: 13px;">Requires organic mouse movement, scroll gestures, or natural dwell time before unlocking ad codes.</p>
+            </div>
+          </div>
+
+          <div class="form-group" style="margin-top: 24px;">
+            <label>ProxyCheck.io API Key (Optional)</label>
+            <input type="text" id="sec-proxycheck-key" class="form-control" placeholder="Enter key for premium real-time residential proxy scoring">
+            <small style="color: #64748b;">Free tier at proxycheck.io provides 1,000 queries/day. If empty, built-in ASN list and ip-api are used.</small>
+          </div>
+
+          <button type="submit" class="btn btn-primary">Save Security Rules</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/admin.js"></script>
+</body>
+</html>

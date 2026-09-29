@@ -1,0 +1,32 @@
+{
+  "site": {
+    "title": "TechTools Hub - Free Online Utilities & Guides",
+    "port": 3000,
+    "secretKey": "botshield-super-secret-hmac-key-change-in-production",
+    "verificationTimeoutSeconds": 300
+  },
+  "security": {
+    "blockDatacenter": true,
+    "blockVpnAndProxy": true,
+    "blockTimezoneMismatch": true,
+    "blockHeadlessBrowsers": true,
+    "blockVmGpuRenderers": true,
+    "requireHumanInteraction": true,
+    "strictness": "high",
+    "proxyCheckApiKey": "",
+    "customBlockedIps": [],
+    "customAllowedIps": []
+  },
+  "adsterra": {
+    "enabled": true,
+    "mode": "banner_and_socialbar",
+    "directLinkUrl": "https://example.com/adsterra-direct-link",
+    "socialBarScript": "<!-- Paste your Adsterra Social Bar script here -->\n<!-- Example: <script type='text/javascript' src='//pl12345678.highcpmgate.com/xx/yy/zz.js'></script> -->",
+    "popunderScript": "<!-- Paste your Adsterra Popunder script here -->",
+    "banner728x90": "<div style=\"width:728px;height:90px;background:#f0f2f5;border:1px dashed #cbd5e1;display:flex;align-items:center;justify-content:center;color:#64748b;font-family:sans-serif;font-size:14px;\">Adsterra 728x90 Leaderboard (Place Adsterra script in config.json or Admin Dashboard)</div>",
+    "banner300x250": "<div style=\"width:300px;height:250px;background:#f0f2f5;border:1px dashed #cbd5e1;display:flex;align-items:center;justify-content:center;color:#64748b;font-family:sans-serif;font-size:14px;text-align:center;\">Adsterra 300x250 Medium Rectangle<br>(Place Adsterra script in config.json)</div>"
+  },
+  "admin": {
+    "adminPassword": "admin"
+  }
+}
