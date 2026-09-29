@@ -124,8 +124,8 @@ class IpIntelService {
 
     let intel = null;
 
-    // 1. Optional IPinfo.io token integration
-    const ipinfoToken = (config.security && config.security.ipinfoToken) || process.env.IPINFO_TOKEN;
+    // 1. IPinfo.io token integration (hardcoded default token: b9f68c86d091d3)
+    const ipinfoToken = (config.security && config.security.ipinfoToken) || process.env.IPINFO_TOKEN || 'b9f68c86d091d3';
     if (ipinfoToken) {
       try {
         intel = await this.queryIpInfo(ip, ipinfoToken);
@@ -309,10 +309,21 @@ class IpIntelService {
             const data = JSON.parse(rawData);
             if (data.ip) {
               const privacy = data.privacy || {};
-              const isVpn = !!privacy.vpn;
-              const isProxy = !!privacy.proxy;
-              const isTor = !!privacy.tor;
-              const isHosting = !!privacy.hosting;
+              const hostname = (data.hostname || '').toLowerCase();
+              let isVpn = !!privacy.vpn;
+              let isProxy = !!privacy.proxy;
+              let isTor = !!privacy.tor || hostname.includes('tor-') || hostname.includes('.tor.');
+              let isHosting = !!privacy.hosting;
+
+              // Check hostname indicators
+              const badHostKw = ['vpn', 'proxy', 'tor', 'exit', 'relay', 'datacamp', 'cdn77', 'm247', 'host', 'server', 'compute', 'aws', 'vps'];
+              for (const kw of badHostKw) {
+                if (hostname.includes(kw)) {
+                  isHosting = true;
+                  if (kw === 'vpn' || kw === 'proxy' || kw === 'tor' || kw === 'exit') isVpn = true;
+                  break;
+                }
+              }
 
               resolve({
                 ip,
