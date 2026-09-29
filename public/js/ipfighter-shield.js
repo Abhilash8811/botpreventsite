@@ -94,9 +94,9 @@
         }
       }
 
-      // Check ISP keywords
+      // Check ISP keywords (specific VPN providers only)
       const ispStr = ((conn.isp || '') + ' ' + (conn.org || '')).toLowerCase();
-      const badKw = ['datacamp', 'm247', 'vpn', 'proxy', 'hosting', 'datacenter', 'nordvpn', 'surfshark', 'expressvpn', 'proton', 'leaseweb', 'choopa', 'zenlayer'];
+      const badKw = ['datacamp', 'm247', 'nordvpn', 'surfshark', 'expressvpn', 'protonvpn', 'mullvad', 'ipvanish', 'cyberghost', 'leaseweb', 'choopa', 'vultr', 'digitalocean', 'hetzner', 'linode', 'ovh'];
       for (const kw of badKw) {
         if (ispStr.includes(kw)) {
           vpnDetected = true;
@@ -122,6 +122,7 @@
     const gpu = getGpuInfo();
     const artifacts = scanAutomationArtifacts();
     const isChrome = !!window.chrome && (!!window.chrome.webstore || !!window.chrome.runtime || !!window.chrome.loadTimes);
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Mobile/i.test(navigator.userAgent) || ('ontouchstart' in window && screen.width <= 1024);
     const networkCheck = await checkClientNetwork();
 
     return {
@@ -139,6 +140,7 @@
       languages: navigator.languages ? Array.from(navigator.languages) : [navigator.language || ''],
       pluginsLength: navigator.plugins ? navigator.plugins.length : 0,
       isChrome: isChrome,
+      isMobile: isMobile,
       clientVpnDetected: networkCheck ? networkCheck.clientVpnDetected : false,
       clientVpnReason: networkCheck ? networkCheck.clientVpnReason : '',
       clientReportedIp: networkCheck ? networkCheck.clientReportedIp : '',

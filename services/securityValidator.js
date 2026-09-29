@@ -128,9 +128,10 @@ class SecurityValidator {
         reasons.push(`Abnormal screen metrics (${fingerprint.screenWidth}x${fingerprint.screenHeight}, depth ${fingerprint.colorDepth})`);
       }
 
-      if (fingerprint.isChrome && fingerprint.pluginsLength === 0) {
+      // Zero plugins check is ONLY applicable to Desktop Chrome (Mobile Chrome never has plugins)
+      if (fingerprint.isChrome && !fingerprint.isMobile && fingerprint.pluginsLength === 0) {
         isBot = true;
-        reasons.push('Headless Chrome signature: zero plugins present');
+        reasons.push('Headless Chrome signature: zero plugins present on desktop');
       }
 
       if (sec.requireHumanInteraction) {
@@ -140,7 +141,8 @@ class SecurityValidator {
         const touches = interaction.touches || 0;
         const dwellMs = interaction.dwellTimeMs || 0;
 
-        if (dwellMs < 400 && (moves + scrolls + touches === 0)) {
+        // Instant automated execution check (< 300ms without any event)
+        if (dwellMs < 300 && (moves + scrolls + touches === 0)) {
           isBot = true;
           reasons.push('Zero human interaction detected (instant automated execution)');
         }
