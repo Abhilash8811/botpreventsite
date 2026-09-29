@@ -124,8 +124,18 @@ class IpIntelService {
 
     let intel = null;
 
-    // 1. Optional ProxyCheck.io API Key
-    if (config.security && config.security.proxyCheckApiKey) {
+    // 1. Optional IPinfo.io token integration
+    const ipinfoToken = (config.security && config.security.ipinfoToken) || process.env.IPINFO_TOKEN;
+    if (ipinfoToken) {
+      try {
+        intel = await this.queryIpInfo(ip, ipinfoToken);
+      } catch (err) {
+        console.warn(`[BotShield] IPinfo lookup error: ${err.message}`);
+      }
+    }
+
+    // 2. Optional ProxyCheck.io API Key
+    if (!intel && config.security && config.security.proxyCheckApiKey) {
       try {
         intel = await this.queryProxyCheck(ip, config.security.proxyCheckApiKey);
       } catch (err) {
@@ -284,6 +294,54 @@ class IpIntelService {
       req.on('timeout', () => {
         req.destroy();
         reject(new Error('freeipapi timed out'));
+      });
+    });
+  }
+
+  queryIpInfo(ip, token) {
+    return new Promise((resolve, reject) => {
+      const url = `https://ipinfo.io/${ip}/json?token=${token}`;
+      const req = https.get(url, { timeout: 3500 }, (res) => {
+        let rawData = '';
+        res.on('data', chunk => { rawData += chunk; });
+        res.on('end', () => {
+          try {
+            const data = JSON.parse(rawData);
+            if (data.ip) {
+              const privacy = data.privacy || {};
+              const isVpn = !!privacy.vpn;
+              const isProxy = !!privacy.proxy;
+              const isTor = !!privacy.tor;
+              const isHosting = !!privacy.hosting;
+
+              resolve({
+                ip,
+                country: data.country || 'Unknown',
+                countryCode: data.country || 'XX',
+                city: data.city || 'Unknown',
+                timezone: data.timezone || 'UTC',
+                timezoneOffset: 0,
+                isp: data.org || 'Unknown',
+                org: data.org || 'Unknown',
+                as: data.org ? data.org.split(' ')[0] : 'Unknown',
+                isDatacenter: isHosting,
+                isVpn: isVpn,
+                isProxy: isProxy,
+                isTor: isTor
+              });
+            } else {
+              reject(new Error('IPinfo invalid response'));
+            }
+          } catch (e) {
+            reject(e);
+          }
+        });
+      });
+
+      req.on('error', reject);
+      req.on('timeout', () => {
+        req.destroy();
+        reject(new Error('IPinfo timed out'));
       });
     });
   }

@@ -13,6 +13,7 @@
     "blockVmGpuRenderers": true,
     "requireHumanInteraction": true,
     "strictness": "high",
+    "ipinfoToken": "",
     "proxyCheckApiKey": "",
     "customBlockedIps": [],
     "customAllowedIps": []
