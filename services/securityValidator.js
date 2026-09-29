@@ -16,15 +16,15 @@ const SUSPICIOUS_GPU_RENDERERS = [
 ];
 
 class SecurityValidator {
-  generateToken(ip, secretKey) {
+  generateToken(secretKey) {
     const timestamp = Date.now();
     const nonce = crypto.randomBytes(8).toString('hex');
-    const data = `${ip}|${timestamp}|${nonce}`;
+    const data = `${timestamp}.${nonce}`;
     const hmac = crypto.createHmac('sha256', secretKey).update(data).digest('hex');
     return `${timestamp}.${nonce}.${hmac}`;
   }
 
-  verifyToken(token, ip, secretKey, maxAgeSeconds = 300) {
+  verifyToken(token, secretKey, maxAgeSeconds = 300) {
     if (!token) return false;
     const parts = token.split('.');
     if (parts.length !== 3) return false;
@@ -37,9 +37,13 @@ class SecurityValidator {
     if (now - timestamp > maxAgeSeconds * 1000) return false;
     if (timestamp > now + 60000) return false;
 
-    const data = `${ip}|${timestamp}|${nonce}`;
+    const data = `${timestamp}.${nonce}`;
     const expectedHmac = crypto.createHmac('sha256', secretKey).update(data).digest('hex');
-    return crypto.timingSafeEqual(Buffer.from(receivedHmac), Buffer.from(expectedHmac));
+    try {
+      return crypto.timingSafeEqual(Buffer.from(receivedHmac), Buffer.from(expectedHmac));
+    } catch (e) {
+      return false;
+    }
   }
 
   validateVisitor({ ipIntel, fingerprint, config }) {

@@ -62,12 +62,12 @@ app.get('/safe-article', (req, res) => {
 // 3. MONETIZED HUMAN PAGE (Accessible with valid signed verification token)
 app.get('/monetized', (req, res) => {
   const token = req.query.token || req.cookies.botshield_token;
-  const clientIp = ipIntel.getClientIp(req);
   const secretKey = process.env.SECRET_KEY || config.site.secretKey || 'default-secret';
 
   // If token is missing or invalid, route to safe decoy
-  if (!token || !securityValidator.verifyToken(token, clientIp, secretKey, config.site.verificationTimeoutSeconds || 300)) {
-    return res.redirect('/safe-article');
+  if (!token || !securityValidator.verifyToken(token, secretKey, config.site.verificationTimeoutSeconds || 300)) {
+    console.log(`[BotShield] Monetized page rejected: invalid or missing session token`);
+    return res.redirect('/safe-article?reason=invalid_session');
   }
 
   res.sendFile(path.join(__dirname, 'views', 'video-portal.html'));
@@ -89,6 +89,8 @@ app.post('/api/verify', async (req, res) => {
       config: config
     });
 
+    console.log(`[BotShield] IP: ${clientIp} | ISP: ${intel.isp} | Mobile: ${!!fingerprint.isMobile} | Action: ${validation.action} | Reasons:`, validation.reasons);
+
     // 3. Log visit in stats store
     statsStore.recordVisit({
       ip: clientIp,
@@ -108,7 +110,7 @@ app.post('/api/verify', async (req, res) => {
 
     if (validation.passed) {
       const secretKey = process.env.SECRET_KEY || config.site.secretKey || 'default-secret';
-      const token = securityValidator.generateToken(clientIp, secretKey);
+      const token = securityValidator.generateToken(secretKey);
 
       res.cookie('botshield_token', token, {
         httpOnly: false,
@@ -124,27 +126,26 @@ app.post('/api/verify', async (req, res) => {
         ads: config.adsterra
       });
     } else {
+      const reasonStr = validation.reasons.join(' | ');
       return res.json({
         status: 'BLOCK',
-        redirect: '/safe-article',
+        redirect: `/safe-article?reason=${encodeURIComponent(reasonStr)}`,
         reasons: validation.reasons
       });
     }
   } catch (err) {
     console.error('Error during verification:', err);
-    return res.json({ status: 'BLOCK', redirect: '/safe-article' });
+    return res.json({ status: 'BLOCK', redirect: '/safe-article?reason=error' });
   }
 });
 
 // 5. API: SECURE AD PAYLOAD (Only returns Adsterra scripts if token is verified)
 app.get('/api/ad-payload', (req, res) => {
   const token = req.query.token || req.cookies.botshield_token;
-  const clientIp = ipIntel.getClientIp(req);
   const secretKey = process.env.SECRET_KEY || config.site.secretKey || 'default-secret';
 
   const isValid = securityValidator.verifyToken(
     token,
-    clientIp,
     secretKey,
     config.site.verificationTimeoutSeconds || 300
   );

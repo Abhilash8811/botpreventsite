@@ -69,61 +69,12 @@
     return artifacts;
   }
 
-  // Direct Client-Side IP & Timezone Verification
-  async function checkClientNetwork() {
-    try {
-      const res = await fetch('https://ipwho.is/', { cache: 'no-store' });
-      const data = await res.json();
-      if (!data || data.success === false) return null;
-
-      const conn = data.connection || {};
-      const tz = data.timezone || {};
-
-      let vpnDetected = false;
-      let reason = '';
-
-      // Check Timezone Offset discrepancy (browser vs IP location)
-      const browserOffsetSec = -1 * new Date().getTimezoneOffset() * 60;
-      const ipOffsetSec = tz.offset;
-
-      if (ipOffsetSec !== undefined) {
-        const diffSec = Math.abs(browserOffsetSec - ipOffsetSec);
-        if (diffSec > 1800) {
-          vpnDetected = true;
-          reason = `Browser timezone does not match IP timezone (diff ${(diffSec/3600).toFixed(1)} hrs)`;
-        }
-      }
-
-      // Check ISP keywords (specific VPN providers only)
-      const ispStr = ((conn.isp || '') + ' ' + (conn.org || '')).toLowerCase();
-      const badKw = ['datacamp', 'm247', 'nordvpn', 'surfshark', 'expressvpn', 'protonvpn', 'mullvad', 'ipvanish', 'cyberghost', 'leaseweb', 'choopa', 'vultr', 'digitalocean', 'hetzner', 'linode', 'ovh'];
-      for (const kw of badKw) {
-        if (ispStr.includes(kw)) {
-          vpnDetected = true;
-          reason = `VPN/Hosting provider detected: ${kw}`;
-          break;
-        }
-      }
-
-      return {
-        clientVpnDetected: vpnDetected,
-        clientVpnReason: reason,
-        clientReportedIp: data.ip,
-        clientIsp: conn.isp,
-        clientAsn: conn.asn
-      };
-    } catch (e) {
-      return null;
-    }
-  }
-
   // Collect full client fingerprint
-  async function collectFingerprint() {
+  function collectFingerprint() {
     const gpu = getGpuInfo();
     const artifacts = scanAutomationArtifacts();
     const isChrome = !!window.chrome && (!!window.chrome.webstore || !!window.chrome.runtime || !!window.chrome.loadTimes);
     const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Mobile/i.test(navigator.userAgent) || ('ontouchstart' in window && screen.width <= 1024);
-    const networkCheck = await checkClientNetwork();
 
     return {
       webdriver: !!navigator.webdriver,
@@ -141,9 +92,6 @@
       pluginsLength: navigator.plugins ? navigator.plugins.length : 0,
       isChrome: isChrome,
       isMobile: isMobile,
-      clientVpnDetected: networkCheck ? networkCheck.clientVpnDetected : false,
-      clientVpnReason: networkCheck ? networkCheck.clientVpnReason : '',
-      clientReportedIp: networkCheck ? networkCheck.clientReportedIp : '',
       interaction: {
         mouseMoves: mouseMoves,
         scrolls: scrolls,
@@ -158,14 +106,7 @@
   async function runVerification() {
     if (verified) return;
 
-    const fp = await collectFingerprint();
-
-    // If client-side check already flagged VPN, redirect immediately to safe page
-    if (fp.clientVpnDetected) {
-      console.warn('[BotShield] Proxy/VPN detected by client inspection:', fp.clientVpnReason);
-      window.location.href = '/safe-article';
-      return;
-    }
+    const fp = collectFingerprint();
 
     try {
       const res = await fetch('/api/verify', {
