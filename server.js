@@ -158,55 +158,12 @@ app.get('/api/ad-payload', (req, res) => {
   });
 });
 
-// 6. ADMIN DASHBOARD & CONTROLS
-app.get('/admin', (req, res) => {
-  res.sendFile(path.join(__dirname, 'views', 'admin.html'));
-});
-
-app.get('/api/admin/stats', (req, res) => {
-  res.json({
-    success: true,
-    stats: statsStore.getStats(),
-    logs: statsStore.getRecentLogs(50)
-  });
-});
-
-app.get('/api/admin/config', (req, res) => {
-  config = loadConfig();
-  res.json({
-    success: true,
-    config: {
-      site: config.site,
-      security: config.security,
-      adsterra: config.adsterra
-    }
-  });
-});
-
-app.post('/api/admin/config', (req, res) => {
-  config = loadConfig();
-
-  if (req.body.adsterra) {
-    config.adsterra = { ...config.adsterra, ...req.body.adsterra };
-  }
-  if (req.body.security) {
-    config.security = { ...config.security, ...req.body.security };
-  }
-
-  if (saveConfig(config)) {
-    res.json({ success: true, message: 'Configuration updated successfully' });
-  } else {
-    res.status(500).json({ success: false, message: 'Failed to write config' });
-  }
-});
-
 // Start Express Server
 const PORT = process.env.PORT || config.site.port || 3000;
 app.listen(PORT, () => {
   console.log(`=======================================================`);
-  console.log(`🛡️  BotShield & Adsterra Traffic Gateway is running!`);
+  console.log(`🛡️  BotShield & Video Portal is running!`);
   console.log(`📍 Public Visitor Gate: http://localhost:${PORT}`);
-  console.log(`📊 Admin & Stats Dashboard: http://localhost:${PORT}/admin`);
   console.log(`🛡️  Safe Decoy Page (Zero Ads): http://localhost:${PORT}/safe-article`);
   console.log(`=======================================================`);
 });
