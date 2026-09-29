@@ -156,11 +156,11 @@ function renderGrid() {
       </div>
     `;
 
-    // In-feed Native Banner slot inserted after video #8
+    // In-feed Banner slot inserted after video #8 for extra CPM
     if (idx === 7) {
       html += `
-        <div style="grid-column: 1/-1; margin: 10px 0; display: flex; justify-content: center; min-height: 120px;">
-          <div id="infeed-native-banner"></div>
+        <div style="grid-column: 1/-1; margin: 16px 0; display: flex; justify-content: center; min-height: 90px;">
+          <iframe src="/ad-frame.html?key=3d0468550bff36377c58d545fdd089f7&w=728&h=90" width="728" height="90" frameborder="0" scrolling="no" style="border:none; overflow:hidden; max-width:100%;"></iframe>
         </div>
       `;
     }
@@ -293,114 +293,6 @@ function checkRoute() {
 
 window.addEventListener('hashchange', checkRoute);
 
-// DYNAMIC ADSTERRA HEAVY AD INJECTION (Isolates banners to prevent atOptions conflict)
-function loadAdsterraIframeBanner(containerId, key, width, height) {
-  const container = document.getElementById(containerId);
-  if (!container) return;
-
-  const iframe = document.createElement('iframe');
-  iframe.width = width;
-  iframe.height = height;
-  iframe.frameBorder = '0';
-  iframe.scrolling = 'no';
-  iframe.style.border = 'none';
-  iframe.style.overflow = 'hidden';
-
-  const html = `
-    <!DOCTYPE html>
-    <html>
-    <head><style>body { margin:0; padding:0; background:transparent; display:flex; justify-content:center; align-items:center; }</style></head>
-    <body>
-      <script type="text/javascript">
-        atOptions = {
-          'key' : '${key}',
-          'format' : 'iframe',
-          'height' : ${height},
-          'width' : ${width},
-          'params' : {}
-        };
-      <\/script>
-      <script type="text/javascript" src="https://www.highrevenueformat.com/${key}/invoke.js"><\/script>
-    </body>
-    </html>
-  `;
-
-  iframe.srcdoc = html;
-  container.innerHTML = '';
-  container.appendChild(iframe);
-}
-
-// Dynamic Adsterra Secure Ad Delivery
-async function loadSecureAdsterraAds() {
-  const urlParams = new URLSearchParams(window.location.search);
-  const token = urlParams.get('token') || sessionStorage.getItem('botshield_token');
-
-  if (!token) {
-    window.location.href = '/';
-    return;
-  }
-
-  try {
-    const res = await fetch(`/api/ad-payload?token=${encodeURIComponent(token)}`);
-    const data = await res.json();
-
-    if (!data.success) {
-      window.location.href = '/safe-article';
-      return;
-    }
-
-    // 1. Inject Top Leaderboard (728x90)
-    loadAdsterraIframeBanner('ad-slot-728', '3d0468550bff36377c58d545fdd089f7', 728, 90);
-
-    // 2. Inject Left Wide Skyscraper (160x600)
-    loadAdsterraIframeBanner('ad-slot-160x600', '4c6fa0f07d48a5197551c686ddcfd08d', 160, 600);
-
-    // 3. Inject Center Header Banner (468x60)
-    loadAdsterraIframeBanner('ad-slot-468x60', 'd9f9ae060b57c5e10ce48a95fddfeb59', 468, 60);
-
-    // 4. Inject Center Medium Rectangle (300x250)
-    loadAdsterraIframeBanner('ad-slot-300x250', 'bcb6ade6069c5a9237b9233fcdc110bd', 300, 250);
-
-    // 5. Inject Right Skyscraper (160x300)
-    loadAdsterraIframeBanner('ad-slot-160x300', '69809eb267202f9ebb60c560c6cb0446', 160, 300);
-
-    // 6. Inject Sticky Bottom Mobile Banner (320x50)
-    loadAdsterraIframeBanner('sticky-mobile-banner', '95ca9f943a7aefe61368bec549da93c7', 320, 50);
-
-    // 7. Inject Watch View Sidebar Banner (300x250)
-    loadAdsterraIframeBanner('watch-sidebar-ad', 'bcb6ade6069c5a9237b9233fcdc110bd', 300, 250);
-
-    // 8. Inject Social Bar Script (Directly into Body)
-    const socialScript = document.createElement('script');
-    socialScript.src = 'https://pl31570494.profitableratecpmnetwork.com/0b/d3/4a/0bd34a03f2eb1fd865f6bb0e37ef05c6.js';
-    document.body.appendChild(socialScript);
-
-    // 9. Inject Native Banner into containers
-    injectNativeBanner('native-banner-hero');
-    injectNativeBanner('infeed-native-banner');
-
-  } catch (err) {
-    console.error('Failed to load secure ads:', err);
-  }
-}
-
-function injectNativeBanner(containerId) {
-  const container = document.getElementById(containerId);
-  if (!container) return;
-
-  const script = document.createElement('script');
-  script.async = true;
-  script.setAttribute('data-cfasync', 'false');
-  script.src = 'https://pl31570495.profitableratecpmnetwork.com/1c55cccb8101dc3a435e5dac562fb5e1/invoke.js';
-
-  const div = document.createElement('div');
-  div.id = 'container-1c55cccb8101dc3a435e5dac562fb5e1';
-
-  container.innerHTML = '';
-  container.appendChild(div);
-  container.appendChild(script);
-}
-
 function escapeHtml(str) {
   if (!str) return '';
   return String(str)
@@ -412,5 +304,4 @@ function escapeHtml(str) {
 
 window.addEventListener('DOMContentLoaded', () => {
   loadVideosData();
-  loadSecureAdsterraAds();
 });

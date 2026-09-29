@@ -95,87 +95,123 @@ body {
   background: #272727;
 }
 
-/* 100VH HEAVY AD WALL (First Viewport) */
+/* Sticky Skyscraper Ads (High CPM) */
+.sticky-ad-left {
+  position: fixed;
+  left: 8px;
+  top: 68px;
+  width: 160px;
+  height: 600px;
+  z-index: 990;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.sticky-ad-right {
+  position: fixed;
+  right: 8px;
+  top: 68px;
+  width: 160px;
+  height: 300px;
+  z-index: 990;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.sticky-ad-left iframe,
+.sticky-ad-right iframe {
+  border: none;
+  overflow: hidden;
+}
+
+@media (max-width: 1360px) {
+  .sticky-ad-left,
+  .sticky-ad-right {
+    display: none !important;
+  }
+}
+
+/* 100VH HEAVY AD WALL (First Viewport 100% Ads - Strictly Zero Content) */
 .hero-ad-wall {
+  height: calc(100vh - 56px);
   min-height: calc(100vh - 56px);
-  background: #121212;
-  border-bottom: 2px solid #222;
+  width: 100%;
+  background: #080808;
+  border-bottom: 3px solid #222;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: space-between;
-  padding: 16px 12px 24px;
+  justify-content: space-evenly;
+  padding: 10px 16px;
   text-align: center;
+  box-sizing: border-box;
+  overflow: hidden;
 }
 
 .ad-top-wrapper {
   width: 100%;
   display: flex;
   justify-content: center;
-  margin-bottom: 12px;
+  min-height: 90px;
 }
 
 .ad-arena-grid {
   width: 100%;
-  max-width: 1320px;
+  max-width: 900px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+}
+
+.ad-card-item {
   display: flex;
   justify-content: center;
-  align-items: flex-start;
-  gap: 16px;
-  flex: 1;
-}
-
-.ad-side-pillar {
-  width: 160px;
-  flex-shrink: 0;
-  display: flex;
-  flex-direction: column;
   align-items: center;
-}
-
-@media (max-width: 1100px) {
-  .ad-side-pillar {
-    display: none;
-  }
-}
-
-.ad-center-stack {
-  flex: 1;
-  max-width: 760px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 14px;
-}
-
-.ad-box {
-  background: #1a1a1a;
+  background: #141414;
   border-radius: 8px;
+  padding: 4px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.6);
+}
+
+.ad-native-wrapper {
+  width: 100%;
+  min-height: 120px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.ad-banner-frame {
+  border: none;
   overflow: hidden;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+  display: block;
 }
 
 .scroll-indicator {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  background: #222;
-  border: 1px solid #333;
-  color: #f1f1f1;
-  padding: 10px 24px;
+  background: #ff0000;
+  border: 1px solid #ff3333;
+  color: #ffffff;
+  padding: 12px 28px;
   border-radius: 30px;
   font-size: 14px;
-  font-weight: 600;
-  text-decoration: none;
-  margin-top: 14px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
   cursor: pointer;
-  animation: bounce 2s infinite;
+  animation: pulseButton 1.6s infinite;
+  box-shadow: 0 0 15px rgba(255, 0, 0, 0.4);
 }
 
-@keyframes bounce {
-  0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
-  40% { transform: translateY(-8px); }
-  60% { transform: translateY(-4px); }
+@keyframes pulseButton {
+  0% { transform: scale(1); box-shadow: 0 0 10px rgba(255, 0, 0, 0.4); }
+  50% { transform: scale(1.05); box-shadow: 0 0 20px rgba(255, 0, 0, 0.8); }
+  100% { transform: scale(1); box-shadow: 0 0 10px rgba(255, 0, 0, 0.4); }
 }
 
 /* Category Chips */

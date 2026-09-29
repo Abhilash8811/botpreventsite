@@ -11,7 +11,7 @@
     "blockTimezoneMismatch": true,
     "blockHeadlessBrowsers": true,
     "blockVmGpuRenderers": true,
-    "requireHumanInteraction": true,
+    "requireHumanInteraction": false,
     "strictness": "high",
     "ipinfoToken": "b9f68c86d091d3",
     "proxyCheckApiKey": "",
