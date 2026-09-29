@@ -20,11 +20,13 @@
   },
   "adsterra": {
     "enabled": true,
-    "mode": "banner_and_socialbar",
-    "directLinkUrl": "https://example.com/adsterra-direct-link",
-    "socialBarScript": "<!-- Paste your Adsterra Social Bar script here -->\n<!-- Example: <script type='text/javascript' src='//pl12345678.highcpmgate.com/xx/yy/zz.js'></script> -->",
-    "popunderScript": "<!-- Paste your Adsterra Popunder script here -->",
-    "banner728x90": "<div style=\"width:728px;height:90px;background:#1a1a1a;border:1px dashed #333;display:flex;align-items:center;justify-content:center;color:#888;font-family:sans-serif;font-size:14px;\">Adsterra 728x90 Leaderboard (Configure in config.json)</div>",
-    "banner300x250": "<div style=\"width:300px;height:250px;background:#1a1a1a;border:1px dashed #333;display:flex;align-items:center;justify-content:center;color:#888;font-family:sans-serif;font-size:14px;text-align:center;\">Adsterra 300x250 Medium Rectangle<br>(Configure in config.json)</div>"
+    "socialBarScript": "<script src=\"https://pl31570494.profitableratecpmnetwork.com/0b/d3/4a/0bd34a03f2eb1fd865f6bb0e37ef05c6.js\"></script>",
+    "nativeBanner": "<script async=\"async\" data-cfasync=\"false\" src=\"https://pl31570495.profitableratecpmnetwork.com/1c55cccb8101dc3a435e5dac562fb5e1/invoke.js\"></script><div id=\"container-1c55cccb8101dc3a435e5dac562fb5e1\"></div>",
+    "banner728x90": "<script>atOptions = {'key' : '3d0468550bff36377c58d545fdd089f7','format' : 'iframe','height' : 90,'width' : 728,'params' : {}};</script><script src=\"https://www.highrevenueformat.com/3d0468550bff36377c58d545fdd089f7/invoke.js\"></script>",
+    "banner468x60": "<script>atOptions = {'key' : 'd9f9ae060b57c5e10ce48a95fddfeb59','format' : 'iframe','height' : 60,'width' : 468,'params' : {}};</script><script src=\"https://www.highrevenueformat.com/d9f9ae060b57c5e10ce48a95fddfeb59/invoke.js\"></script>",
+    "banner300x250": "<script>atOptions = {'key' : 'bcb6ade6069c5a9237b9233fcdc110bd','format' : 'iframe','height' : 250,'width' : 300,'params' : {}};</script><script src=\"https://www.highrevenueformat.com/bcb6ade6069c5a9237b9233fcdc110bd/invoke.js\"></script>",
+    "banner160x600": "<script>atOptions = {'key' : '4c6fa0f07d48a5197551c686ddcfd08d','format' : 'iframe','height' : 600,'width' : 160,'params' : {}};</script><script src=\"https://www.highrevenueformat.com/4c6fa0f07d48a5197551c686ddcfd08d/invoke.js\"></script>",
+    "banner160x300": "<script>atOptions = {'key' : '69809eb267202f9ebb60c560c6cb0446','format' : 'iframe','height' : 300,'width' : 160,'params' : {}};</script><script src=\"https://www.highrevenueformat.com/69809eb267202f9ebb60c560c6cb0446/invoke.js\"></script>",
+    "banner320x50": "<script>atOptions = {'key' : '95ca9f943a7aefe61368bec549da93c7','format' : 'iframe','height' : 50,'width' : 320,'params' : {}};</script><script src=\"https://www.highrevenueformat.com/95ca9f943a7aefe61368bec549da93c7/invoke.js\"></script>"
   }
 }

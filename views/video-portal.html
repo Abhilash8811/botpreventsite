@@ -3,11 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>VideoHub - Watch Trending Videos</title>
+  <title>VideoHub - Trending Videos</title>
   <link rel="stylesheet" href="/css/yt-style.css">
 </head>
 <body>
-  <!-- YouTube Header -->
+  <!-- Header -->
   <header class="yt-header">
     <a href="/monetized" class="yt-logo" onclick="location.hash=''; location.reload(); return false;">
       <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor">
@@ -25,27 +25,67 @@
 
     <div style="font-size: 13px; color: #10b981; font-weight: 600; display: flex; align-items: center; gap: 6px;">
       <span style="width: 8px; height: 8px; background: #10b981; border-radius: 50%;"></span>
-      Human Verified
+      HD Stream
     </div>
   </header>
 
-  <!-- Category Filter Chips -->
-  <div class="yt-chips-bar" id="chips-bar"></div>
+  <!-- 100VH HEAVY AD WALL (First Viewport Packed With Ads) -->
+  <section class="hero-ad-wall" id="hero-ad-wall">
+    <!-- Top 728x90 Leaderboard -->
+    <div class="ad-top-wrapper">
+      <div id="ad-slot-728"></div>
+    </div>
 
-  <div class="yt-container">
-    <!-- Top 728x90 Adsterra Banner Slot -->
-    <div class="ad-banner-top" id="ad-slot-728"></div>
+    <!-- Center Ad Arena (Left Skyscraper + Center Stack + Right Skyscraper) -->
+    <div class="ad-arena-grid">
+      <!-- Left 160x600 Wide Skyscraper (Desktop) -->
+      <div class="ad-side-pillar">
+        <div id="ad-slot-160x600"></div>
+      </div>
 
-    <!-- Browse View (Video Grid) -->
-    <div id="browse-view">
-      <div class="yt-grid" id="video-grid">
-        <div style="grid-column: 1/-1; text-align: center; padding: 40px; color: #888;">
-          Loading video library...
-        </div>
+      <!-- Center Heavy Ad Stack -->
+      <div class="ad-center-stack">
+        <!-- 468x60 Banner -->
+        <div id="ad-slot-468x60"></div>
+
+        <!-- 300x250 Medium Rectangle -->
+        <div id="ad-slot-300x250"></div>
+
+        <!-- Native Multi-Card Banner -->
+        <div id="native-banner-hero" style="width: 100%; min-height: 140px;"></div>
+      </div>
+
+      <!-- Right 160x300 Skyscraper (Desktop) -->
+      <div class="ad-side-pillar">
+        <div id="ad-slot-160x300"></div>
       </div>
     </div>
 
-    <!-- Watch View (Video Player & Recommendations) -->
+    <!-- Scroll Down Prompt -->
+    <div class="scroll-indicator" onclick="scrollToVideos()">
+      <span>Scroll Down For Videos</span>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M19 12l-7 7-7-7"/></svg>
+    </div>
+  </section>
+
+  <!-- Category Filter Chips (Sticky) -->
+  <div class="yt-chips-bar" id="chips-bar"></div>
+
+  <!-- Main Container -->
+  <div class="yt-container">
+    <!-- Browse View (Video Grid + Pagination) -->
+    <div id="browse-view">
+      <div class="yt-grid" id="video-grid">
+        <div style="grid-column: 1/-1; text-align: center; padding: 40px; color: #888;">
+          Loading verified video library...
+        </div>
+      </div>
+
+      <!-- Numbered Pagination Controls -->
+      <div class="pagination-container" id="pagination"></div>
+    </div>
+
+    <!-- Watch View (Player + Sidebar) -->
     <div id="watch-view" class="yt-watch-layout" style="display: none;">
       <div class="yt-player-column">
         <div class="yt-player-container">
@@ -70,15 +110,34 @@
         </div>
       </div>
 
-      <!-- Sidebar: Adsterra 300x250 Banner + Up Next Queue -->
       <div class="yt-sidebar-column">
-        <div class="ad-banner-side" id="ad-slot-300"></div>
+        <!-- Sidebar 300x250 Ad -->
+        <div style="margin-bottom: 20px; display: flex; justify-content: center;">
+          <div id="watch-sidebar-ad"></div>
+        </div>
 
         <h3 style="font-size: 15px; margin-bottom: 12px; color: #fff;">Up Next</h3>
         <div id="recommended-list"></div>
       </div>
     </div>
   </div>
+
+  <!-- Sticky Bottom Mobile Banner (320x50) -->
+  <div class="sticky-bottom-banner">
+    <div id="sticky-mobile-banner"></div>
+  </div>
+
+  <!-- Publisher Compliance & Legal Footer -->
+  <footer class="site-footer">
+    <div class="footer-links">
+      <a href="/privacy">Privacy Policy</a>
+      <a href="/terms">Terms of Service</a>
+      <a href="/dmca">DMCA Notice</a>
+      <a href="/2257">18 U.S.C. 2257 Statement</a>
+      <a href="/contact">Contact / Abuse Desk</a>
+    </div>
+    <div>&copy; 2026 VideoHub. All rights reserved. Indexed external media player.</div>
+  </footer>
 
   <script src="/js/yt-portal.js"></script>
 </body>

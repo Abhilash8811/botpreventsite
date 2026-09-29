@@ -59,6 +59,13 @@ app.get('/safe-article', (req, res) => {
   res.sendFile(path.join(__dirname, 'views', 'safe-decoy.html'));
 });
 
+// Policy and Compliance Pages
+app.get('/privacy', (req, res) => res.sendFile(path.join(__dirname, 'views', 'privacy.html')));
+app.get('/terms', (req, res) => res.sendFile(path.join(__dirname, 'views', 'terms.html')));
+app.get('/dmca', (req, res) => res.sendFile(path.join(__dirname, 'views', 'dmca.html')));
+app.get('/2257', (req, res) => res.sendFile(path.join(__dirname, 'views', '2257.html')));
+app.get('/contact', (req, res) => res.sendFile(path.join(__dirname, 'views', 'contact.html')));
+
 // 3. MONETIZED HUMAN PAGE (Accessible with valid signed verification token)
 app.get('/monetized', (req, res) => {
   const token = req.query.token || req.cookies.botshield_token;
