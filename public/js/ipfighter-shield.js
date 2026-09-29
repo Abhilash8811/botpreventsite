@@ -1,6 +1,6 @@
 /**
  * IPFighter Shield - Deep Browser Fingerprinting & Anti-Bot Defense
- * Protects Adsterra accounts by filtering out Bots, Headless Browsers, Datacenters & VPNs.
+ * Real-time hardware, timezone & VPN detection
  */
 (function() {
   'use strict';
@@ -10,33 +10,19 @@
   let scrolls = 0;
   let touches = 0;
   let keys = 0;
-  let lastMoveTime = 0;
   let verified = false;
 
-  // Track human interaction events
-  function onMouseMove() {
-    mouseMoves++;
-    lastMoveTime = Date.now();
-  }
-
-  function onScroll() {
-    scrolls++;
-  }
-
-  function onTouch() {
-    touches++;
-  }
-
-  function onKeyDown() {
-    keys++;
-  }
+  function onMouseMove() { mouseMoves++; }
+  function onScroll() { scrolls++; }
+  function onTouch() { touches++; }
+  function onKeyDown() { keys++; }
 
   window.addEventListener('mousemove', onMouseMove, { passive: true });
   window.addEventListener('scroll', onScroll, { passive: true });
   window.addEventListener('touchstart', onTouch, { passive: true });
   window.addEventListener('keydown', onKeyDown, { passive: true });
 
-  // WebGL Unmasked GPU Renderer Detector (Detects VMs & Headless Chrome SwiftShader)
+  // WebGL Unmasked GPU Renderer
   function getGpuInfo() {
     try {
       const canvas = document.createElement('canvas');
@@ -60,90 +46,89 @@
     }
   }
 
-  // Automation Artifact Scanner
+  // Automation Artifacts
   function scanAutomationArtifacts() {
     const artifacts = [];
-
-    // Puppeteer / Selenium / Chromedriver hooks
     const suspiciousKeys = [
-      'webdriver',
-      '__webdriver_evaluate',
-      '__selenium_evaluate',
-      '__webdriver_script_fn',
-      '__driver_evaluate',
-      '__webdriver_unwrapped',
-      '__fxdriver_evaluate',
-      '__driver_unwrapped',
-      '__puppeteer_evaluation_script__',
-      '_phantom',
-      'callPhantom',
-      '__nightmare',
-      '_selenium'
+      'webdriver', '__webdriver_evaluate', '__selenium_evaluate',
+      '__webdriver_script_fn', '__driver_evaluate', '__webdriver_unwrapped',
+      '__puppeteer_evaluation_script__', '_phantom', 'callPhantom',
+      '__nightmare', '_selenium'
     ];
 
     for (const key of suspiciousKeys) {
-      if (key in window) {
-        artifacts.push(key);
-      }
+      if (key in window) artifacts.push(key);
     }
 
-    // Check document for cdc_ attributes
     for (const prop in document) {
       if (prop.startsWith('cdc_') || prop.startsWith('$cdc_')) {
         artifacts.push(`doc.${prop}`);
       }
     }
 
-    // Check window properties for cdc_
-    for (const prop in window) {
-      if (prop.startsWith('cdc_') || prop.startsWith('$cdc_')) {
-        artifacts.push(`win.${prop}`);
-      }
-    }
-
     return artifacts;
   }
 
-  // Canvas fingerprint hash
-  function getCanvasHash() {
+  // Direct Client-Side IP & Timezone Verification
+  async function checkClientNetwork() {
     try {
-      const canvas = document.createElement('canvas');
-      canvas.width = 200;
-      canvas.height = 50;
-      const ctx = canvas.getContext('2d');
-      ctx.textBaseline = 'top';
-      ctx.font = '14px Arial';
-      ctx.fillStyle = '#f60';
-      ctx.fillRect(125, 1, 62, 20);
-      ctx.fillStyle = '#069';
-      ctx.fillText('AdsterraSafeCheck,123!', 2, 15);
-      ctx.fillStyle = 'rgba(102, 204, 0, 0.7)';
-      ctx.fillText('AdsterraSafeCheck,123!', 4, 17);
-      const dataUrl = canvas.toDataURL();
-      
-      let hash = 0;
-      for (let i = 0; i < dataUrl.length; i++) {
-        hash = ((hash << 5) - hash) + dataUrl.charCodeAt(i);
-        hash |= 0;
+      const res = await fetch('https://ipwho.is/', { cache: 'no-store' });
+      const data = await res.json();
+      if (!data || data.success === false) return null;
+
+      const conn = data.connection || {};
+      const tz = data.timezone || {};
+
+      let vpnDetected = false;
+      let reason = '';
+
+      // Check Timezone Offset discrepancy (browser vs IP location)
+      const browserOffsetSec = -1 * new Date().getTimezoneOffset() * 60;
+      const ipOffsetSec = tz.offset;
+
+      if (ipOffsetSec !== undefined) {
+        const diffSec = Math.abs(browserOffsetSec - ipOffsetSec);
+        if (diffSec > 1800) {
+          vpnDetected = true;
+          reason = `Browser timezone does not match IP timezone (diff ${(diffSec/3600).toFixed(1)} hrs)`;
+        }
       }
-      return hash.toString(16);
+
+      // Check ISP keywords
+      const ispStr = ((conn.isp || '') + ' ' + (conn.org || '')).toLowerCase();
+      const badKw = ['datacamp', 'm247', 'vpn', 'proxy', 'hosting', 'datacenter', 'nordvpn', 'surfshark', 'expressvpn', 'proton', 'leaseweb', 'choopa', 'zenlayer'];
+      for (const kw of badKw) {
+        if (ispStr.includes(kw)) {
+          vpnDetected = true;
+          reason = `VPN/Hosting provider detected: ${kw}`;
+          break;
+        }
+      }
+
+      return {
+        clientVpnDetected: vpnDetected,
+        clientVpnReason: reason,
+        clientReportedIp: data.ip,
+        clientIsp: conn.isp,
+        clientAsn: conn.asn
+      };
     } catch (e) {
-      return 'canvas_error';
+      return null;
     }
   }
 
   // Collect full client fingerprint
-  function collectFingerprint() {
+  async function collectFingerprint() {
     const gpu = getGpuInfo();
     const artifacts = scanAutomationArtifacts();
     const isChrome = !!window.chrome && (!!window.chrome.webstore || !!window.chrome.runtime || !!window.chrome.loadTimes);
+    const networkCheck = await checkClientNetwork();
 
     return {
       webdriver: !!navigator.webdriver,
       automationArtifacts: artifacts,
       gpuVendor: gpu.vendor,
       gpuRenderer: gpu.renderer,
-      canvasHash: getCanvasHash(),
       timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || '',
       timezoneOffset: new Date().getTimezoneOffset(),
       screenWidth: screen.width || 0,
@@ -151,11 +136,12 @@
       colorDepth: screen.colorDepth || 0,
       windowWidth: window.innerWidth || 0,
       windowHeight: window.innerHeight || 0,
-      pixelRatio: window.devicePixelRatio || 1,
       languages: navigator.languages ? Array.from(navigator.languages) : [navigator.language || ''],
       pluginsLength: navigator.plugins ? navigator.plugins.length : 0,
-      hardwareConcurrency: navigator.hardwareConcurrency || 0,
       isChrome: isChrome,
+      clientVpnDetected: networkCheck ? networkCheck.clientVpnDetected : false,
+      clientVpnReason: networkCheck ? networkCheck.clientVpnReason : '',
+      clientReportedIp: networkCheck ? networkCheck.clientReportedIp : '',
       interaction: {
         mouseMoves: mouseMoves,
         scrolls: scrolls,
@@ -166,68 +152,18 @@
     };
   }
 
-  // Inject Adsterra ads dynamically into container elements
-  function injectAdsterraAds(ads) {
-    if (!ads) return;
-
-    // 1. Social Bar script
-    if (ads.socialBarScript && ads.socialBarScript.trim().startsWith('<script')) {
-      const temp = document.createElement('div');
-      temp.innerHTML = ads.socialBarScript;
-      const scripts = temp.querySelectorAll('script');
-      scripts.forEach(s => {
-        const newScript = document.createElement('script');
-        if (s.src) newScript.src = s.src;
-        if (s.innerHTML) newScript.innerHTML = s.innerHTML;
-        if (s.type) newScript.type = s.type;
-        document.body.appendChild(newScript);
-      });
-    }
-
-    // 2. Popunder script
-    if (ads.popunderScript && ads.popunderScript.trim().startsWith('<script')) {
-      const temp = document.createElement('div');
-      temp.innerHTML = ads.popunderScript;
-      const scripts = temp.querySelectorAll('script');
-      scripts.forEach(s => {
-        const newScript = document.createElement('script');
-        if (s.src) newScript.src = s.src;
-        if (s.innerHTML) newScript.innerHTML = s.innerHTML;
-        document.body.appendChild(newScript);
-      });
-    }
-
-    // 3. 728x90 Banner
-    const container728 = document.getElementById('ad-slot-728');
-    if (container728 && ads.banner728x90) {
-      container728.innerHTML = ads.banner728x90;
-      executeInlineScripts(container728);
-    }
-
-    // 4. 300x250 Banner
-    const container300 = document.getElementById('ad-slot-300');
-    if (container300 && ads.banner300x250) {
-      container300.innerHTML = ads.banner300x250;
-      executeInlineScripts(container300);
-    }
-  }
-
-  function executeInlineScripts(el) {
-    const scripts = el.querySelectorAll('script');
-    scripts.forEach(s => {
-      const newScript = document.createElement('script');
-      if (s.src) newScript.src = s.src;
-      if (s.innerHTML) newScript.innerHTML = s.innerHTML;
-      if (s.type) newScript.type = s.type;
-      s.parentNode.replaceChild(newScript, s);
-    });
-  }
-
   // Execute verification request
   async function runVerification() {
     if (verified) return;
 
-    const fp = collectFingerprint();
+    const fp = await collectFingerprint();
+
+    // If client-side check already flagged VPN, redirect immediately to safe page
+    if (fp.clientVpnDetected) {
+      console.warn('[BotShield] Proxy/VPN detected by client inspection:', fp.clientVpnReason);
+      window.location.href = '/safe-article';
+      return;
+    }
 
     try {
       const res = await fetch('/api/verify', {
@@ -240,43 +176,29 @@
 
       if (data.status === 'ALLOW') {
         verified = true;
-        // If mode is Direct Link redirect
         if (data.mode === 'direct_link' && data.directLinkUrl) {
           window.location.href = data.directLinkUrl;
           return;
         }
 
-        // If on the gate checkpoint page, proceed to monetized page
         if (window.location.pathname === '/' || window.location.pathname === '/gate') {
           sessionStorage.setItem('botshield_token', data.token);
           window.location.href = `/monetized?token=${encodeURIComponent(data.token)}`;
           return;
         }
-
-        // If already on monetized page, inject ads
-        if (data.ads) {
-          injectAdsterraAds(data.ads);
-        }
       } else {
-        // Blocked: silently redirect to safe article decoy
-        console.warn('[BotShield] Security verification notice.');
+        console.warn('[BotShield] Blocked. Redirecting to safe decoy.');
         window.location.href = '/safe-article';
       }
     } catch (err) {
       console.error('[BotShield] Verification error:', err);
-      // Fail closed to safe page
       window.location.href = '/safe-article';
     }
   }
 
-  // Wait 600ms to allow natural human mouse movement or touch, then verify
   window.addEventListener('DOMContentLoaded', () => {
-    setTimeout(runVerification, 700);
+    setTimeout(runVerification, 500);
   });
 
-  // Expose manual trigger if needed
-  window.BotShield = {
-    verify: runVerification,
-    getFingerprint: collectFingerprint
-  };
+  window.BotShield = { verify: runVerification };
 })();

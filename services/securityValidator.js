@@ -1,6 +1,6 @@
 const crypto = require('crypto');
 
-// VM and Headless Software GPU Renderers (commonly used in Puppeteer / Playwright / Docker VMs)
+// VM and Headless Software GPU Renderers
 const SUSPICIOUS_GPU_RENDERERS = [
   'swiftshader',
   'llvmpipe',
@@ -33,10 +33,9 @@ class SecurityValidator {
     const timestamp = parseInt(timestampStr, 10);
     if (isNaN(timestamp)) return false;
 
-    // Check expiry
     const now = Date.now();
     if (now - timestamp > maxAgeSeconds * 1000) return false;
-    if (timestamp > now + 60000) return false; // future timestamp rejection
+    if (timestamp > now + 60000) return false;
 
     const data = `${ip}|${timestamp}|${nonce}`;
     const expectedHmac = crypto.createHmac('sha256', secretKey).update(data).digest('hex');
@@ -63,39 +62,54 @@ class SecurityValidator {
       reasons.push(`Commercial VPN or Proxy detected (${ipIntel.isp || 'Flagged'})`);
     }
 
-    // 3. Timezone Consistency Check (Inspired by ipfighter.com)
+    // 3. Timezone Consistency Check (The IPFighter method)
     if (sec.blockTimezoneMismatch && fingerprint) {
       const clientTz = (fingerprint.timezone || '').trim().toLowerCase();
       const ipTz = (ipIntel.timezone || '').trim().toLowerCase();
 
-      // Check timezone offset if available
+      // String comparison (e.g. Asia/Kolkata vs America/New_York)
       if (clientTz && ipTz && ipTz !== 'utc' && !ipIntel.isLocal) {
-        // Compare regions/cities
-        const clientRegion = clientTz.split('/')[0];
-        const ipRegion = ipTz.split('/')[0];
-
-        if (clientRegion && ipRegion && clientRegion !== ipRegion) {
+        if (clientTz !== ipTz) {
           isVpn = true;
-          reasons.push(`Timezone Geolocation Mismatch: Browser reports "${fingerprint.timezone}", IP locates in "${ipIntel.timezone}"`);
+          reasons.push(`Timezone Location Mismatch: Browser is in "${fingerprint.timezone}", IP locates in "${ipIntel.timezone}"`);
+        }
+      }
+
+      // Mathematical offset comparison (in seconds)
+      if (fingerprint.timezoneOffset !== undefined && ipIntel.timezoneOffset !== undefined && !ipIntel.isLocal) {
+        // Javascript getTimezoneOffset returns minutes from UTC with opposite sign
+        // e.g. UTC+5:30 -> -330 min -> clientOffsetSec = +19800 sec
+        const clientOffsetSec = -1 * fingerprint.timezoneOffset * 60;
+        const ipOffsetSec = ipIntel.timezoneOffset;
+
+        const diffSeconds = Math.abs(clientOffsetSec - ipOffsetSec);
+        // If difference is greater than 30 minutes (1800s), timezone is spoofed/VPN
+        if (diffSeconds > 1800) {
+          isVpn = true;
+          const diffHours = (diffSeconds / 3600).toFixed(1);
+          reasons.push(`Clock Timezone Offset Discrepancy: ${diffHours} hour mismatch between browser clock and IP location`);
         }
       }
     }
 
-    // 4. Headless Browser / Automation Checks
+    // 4. Client-side VPN flags reported by client shield
+    if (fingerprint && fingerprint.clientVpnDetected) {
+      isVpn = true;
+      reasons.push(`Client telemetry confirmed proxy/VPN: ${fingerprint.clientVpnReason || 'Flagged'}`);
+    }
+
+    // 5. Headless Browser / Automation Checks
     if (fingerprint) {
-      // Check navigator.webdriver
       if (sec.blockHeadlessBrowsers && fingerprint.webdriver === true) {
         isBot = true;
         reasons.push('Automated Headless Browser detected (navigator.webdriver = true)');
       }
 
-      // Check automation artifacts
       if (fingerprint.automationArtifacts && fingerprint.automationArtifacts.length > 0) {
         isBot = true;
         reasons.push(`Automation tool signatures found: ${fingerprint.automationArtifacts.join(', ')}`);
       }
 
-      // Check GPU Renderer (Virtual Machine / Headless software rasterizer)
       if (sec.blockVmGpuRenderers && fingerprint.gpuRenderer) {
         const gpuLower = fingerprint.gpuRenderer.toLowerCase();
         for (const badGpu of SUSPICIOUS_GPU_RENDERERS) {
@@ -107,19 +121,16 @@ class SecurityValidator {
         }
       }
 
-      // Check Screen & Window Metrics
       if (fingerprint.screenWidth === 0 || fingerprint.screenHeight === 0 || fingerprint.colorDepth < 16) {
         isBot = true;
         reasons.push(`Abnormal screen metrics (${fingerprint.screenWidth}x${fingerprint.screenHeight}, depth ${fingerprint.colorDepth})`);
       }
 
-      // Check Plugins
       if (fingerprint.isChrome && fingerprint.pluginsLength === 0) {
         isBot = true;
         reasons.push('Headless Chrome signature: zero plugins present');
       }
 
-      // Check Human Interaction (Entropy)
       if (sec.requireHumanInteraction) {
         const interaction = fingerprint.interaction || {};
         const moves = interaction.mouseMoves || 0;
