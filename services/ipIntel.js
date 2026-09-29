@@ -57,6 +57,19 @@ const SUSPICIOUS_KEYWORDS = [
   'namecheap', 'wireguard', 'openvpn', 'shadowsocks'
 ];
 
+function getTimezoneOffsetSeconds(timeZone) {
+  if (!timeZone || timeZone === 'UTC') return 0;
+  try {
+    const now = new Date();
+    const tzDateStr = now.toLocaleString('en-US', { timeZone: timeZone });
+    const tzDate = new Date(tzDateStr);
+    const utcDate = new Date(now.toLocaleString('en-US', { timeZone: 'UTC' }));
+    return Math.round((tzDate.getTime() - utcDate.getTime()) / 1000);
+  } catch (e) {
+    return 0;
+  }
+}
+
 class IpIntelService {
   constructor() {
     this.cache = new Map();
@@ -315,23 +328,26 @@ class IpIntelService {
               let isTor = !!privacy.tor || hostname.includes('tor-') || hostname.includes('.tor.');
               let isHosting = !!privacy.hosting;
 
-              // Check hostname indicators
-              const badHostKw = ['vpn', 'proxy', 'tor', 'exit', 'relay', 'datacamp', 'cdn77', 'm247', 'host', 'server', 'compute', 'aws', 'vps'];
+              // Only match specific datacenter/VPN/Tor hostname indicators
+              const badHostKw = ['tor-exit', '.tor.', 'vpn', 'proxy', 'exit-node', 'relay', 'datacamp', 'cdn77', 'm247', 'vultr', 'digitalocean', 'linode', 'hetzner', 'ovh', 'compute.amazonaws', 'googleusercontent.com', 'azure.com'];
               for (const kw of badHostKw) {
                 if (hostname.includes(kw)) {
                   isHosting = true;
-                  if (kw === 'vpn' || kw === 'proxy' || kw === 'tor' || kw === 'exit') isVpn = true;
+                  if (kw === 'vpn' || kw === 'proxy' || kw.includes('tor') || kw === 'exit-node') isVpn = true;
                   break;
                 }
               }
+
+              const tz = data.timezone || 'UTC';
+              const tzOffset = getTimezoneOffsetSeconds(tz);
 
               resolve({
                 ip,
                 country: data.country || 'Unknown',
                 countryCode: data.country || 'XX',
                 city: data.city || 'Unknown',
-                timezone: data.timezone || 'UTC',
-                timezoneOffset: 0,
+                timezone: tz,
+                timezoneOffset: tzOffset,
                 isp: data.org || 'Unknown',
                 org: data.org || 'Unknown',
                 as: data.org ? data.org.split(' ')[0] : 'Unknown',

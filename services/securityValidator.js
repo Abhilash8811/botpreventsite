@@ -67,11 +67,13 @@ class SecurityValidator {
       const clientTz = (fingerprint.timezone || '').trim().toLowerCase();
       const ipTz = (ipIntel.timezone || '').trim().toLowerCase();
 
-      // String comparison (e.g. Asia/Kolkata vs America/New_York)
+      // Region comparison (e.g. America vs Asia, Europe vs Asia)
       if (clientTz && ipTz && ipTz !== 'utc' && !ipIntel.isLocal) {
-        if (clientTz !== ipTz) {
+        const clientRegion = clientTz.split('/')[0];
+        const ipRegion = ipTz.split('/')[0];
+        if (clientRegion && ipRegion && clientRegion !== ipRegion) {
           isVpn = true;
-          reasons.push(`Timezone Location Mismatch: Browser is in "${fingerprint.timezone}", IP locates in "${ipIntel.timezone}"`);
+          reasons.push(`Cross-Continent Location Mismatch: Browser in "${fingerprint.timezone}", IP in "${ipIntel.timezone}"`);
         }
       }
 
